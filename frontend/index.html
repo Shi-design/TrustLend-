@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrustLend - Microfinance</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { margin: 0; padding: 0; background: #f0f4fb; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .card { background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); width: 100%; max-width: 420px; padding: 30px; }
+    h2 { text-align: center; margin: 0 0 10px; font-size: 24px; font-weight: 700; }
+    p { text-align: center; font-size: 14px; color: #666; margin-bottom: 20px; }
+    button, input, select { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; font-size: 16px; }
+    button { background: #2563eb; color: white; font-weight: 600; cursor: pointer; }
+    button.secondary { background: #f1f1f1; color: #333; }
+    .input-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
+    .input-group input, .input-group select { background: #f9fafb; border: 1px solid #d1d5db; }
+    .success, .status { background: #e0fbe5; padding: 12px; border-radius: 8px; text-align: center; margin-top: 10px; font-weight: 600; }
+    .danger { background: #fde2e1; color: red; padding: 12px; border-radius: 8px; text-align: center; margin-top: 10px; font-weight: 600; }
+    .hidden { display: none; }
+    .nav { text-align: left; margin-bottom: 10px; cursor: pointer; color: #2563eb; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="card" id="app"></div>
+
+  <script>
+    let users = {};
+    let currentUserId = null;
+
+    const app = document.getElementById('app');
+
+    function showHome() {
+      app.innerHTML = `
+        <div style="text-align:center">
+          <div style="font-size:40px">💳</div>
+          <h2>Welcome to TrustLend</h2>
+          <p>Your trusted microfinance partner</p>
+          <button onclick="showRegister()">👤 Register User</button>
+          <button class="secondary" onclick="showVerify()">🏠 Existing User</button>
+        </div>
+      `;
+    }
+
+    function showRegister() {
+  app.innerHTML = `
+    <div class="nav" onclick="showHome()">← Back</div>
+    <h2>Register New User</h2>
+    <div class="input-group">
+      <label>ID Number (Aadhar Card)</label>
+      <input type="text" id="idNumber" maxlength="14" placeholder="xxxx xxxx xxxx" oninput="formatAadhar(this)">
+    </div>
+    <div class="input-group">
+      <label>Recharge Amount</label>
+      <input type="text" id="recharge" placeholder="e.g., ₹400">
+    </div>
+    <div class="input-group">
+      <label>Utility Score</label>
+      <input type="text" id="creditScore" placeholder="e.g., 5">
+    </div>
+    <div class="input-group">
+      <label>UPI Usage</label>
+      <select id="upi">
+        <option value="">Select UPI Usage</option>
+        <option>Yes</option>
+        <option>No</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>Occupation</label>
+      <input type="text" id="occupation" placeholder="e.g., Farmer">
+    </div>
+    <div class="input-group">
+      <label>Missed Payments</label>
+      <input type="number" id="missed" placeholder="Number of missed payments" min="0">
+    </div>
+    <button onclick="submitRegister()">Submit Registration</button>
+  `;
+}
+function formatAadhar(input) {
+  let value = input.value.replace(/\D/g, '');
+  value = value.substring(0, 12);
+  const parts = [];
+  for (let i = 0; i < value.length; i += 4) {
+    parts.push(value.substring(i, i + 4));
+  }
+  input.value = parts.join(' ');
+}
+
+
+
+    function submitRegister() {
+      const id = document.getElementById('idNumber').value;
+      const recharge = document.getElementById('recharge').value;
+      const score = parseInt(document.getElementById('creditScore').value);
+      const upi = document.getElementById('upi').value;
+      const occ = document.getElementById('occupation').value;
+      const missed = document.getElementById('missed').value;
+
+      if (!id || !recharge || !score || !upi || !occ || missed === '') {
+        alert("Please fill all fields correctly.");
+        return;
+      }
+
+      const userId = Math.floor(100 + Math.random() * 900);
+      const loanId = Math.floor(Math.random() * 10) + 1;
+      const approval = score >= 4;
+
+      users[userId] = { aadhar: id, creditScore: score, approval, loanId };
+
+      currentUserId = userId;
+
+      app.innerHTML = `
+        <h2 style="color:green; text-align:center">✔ Registration Successful!</h2>
+        <div class="success">Success: true<br>User ID: <strong>${userId}</strong></div>
+        <div class="danger"><strong>Important:</strong> Please save your User ID: <strong>${userId}</strong><br>This is different from your Aadhar number.</div>
+        <button onclick="showHome()">Back to Home</button>
+      `;
+    }
+
+    function showVerify() {
+      app.innerHTML = `
+        <div class="nav" onclick="showHome()">← Back</div>
+        <h2>Verify Your User ID</h2>
+        <p>Please enter your User ID that you received after registration to access existing user services.</p>
+        <input type="text" id="verifyId" placeholder="Enter Your User ID">
+        <button onclick="checkUser()">Verify User ID</button>
+        <p style="text-align:center;font-size:14px">Don't have an account? <span style="color:#2563eb; cursor:pointer" onclick="showRegister()">Register here</span></p>
+      `;
+    }
+
+    function checkUser() {
+  const id = document.getElementById('verifyId').value;
+  if (!users[id]) {
+    app.innerHTML += `<div class="danger">User not found</div>`;
+
+  } else {
+    const user = users[id];
+    app.innerHTML = `
+      <div class="nav" onclick="showHome()">← Back</div>
+      <h2>User Status</h2>
+      <div class="success">
+        <div>Credit Score: <strong>${user.creditScore}/10</strong></div>
+        <div>Loan ID: <strong>${user.loanId}</strong></div>
+        <div style="margin-top:10px; color:green">✔ Approval Status: <strong>${user.approval}</strong></div>
+      </div>
+      <button onclick="showHome()">Back to Home</button>
+    `;
+  }
+}
+
+
+    showHome();
+  </script>
+</body>
+</html>
